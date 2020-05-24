@@ -19,14 +19,13 @@ type UserController struct {
 func (c *UserController) Get() {
 	var user =models.GetAll()
 	test := utils.RDSTest
-	values,_:=json.Marshal(user)
-	test.Set("users",string(values))
-	var users,_=test.Get("users")
+	test.SetEx("users",user,10)
+	var users =test.Get("users")
+	//转成字符串
+	fmt.Println(string(users))
 	var aType []models.User
-	json.Unmarshal(users.([]byte),&aType)
-	fmt.Println("---------redis-存值----------")
-	fmt.Println(aType)
-	fmt.Println("---------redis取值-----------")
+	 //json转实体对象
+	json.Unmarshal(users,&aType)
 	data := &JSONS1{"200", "获取成功",  aType}
 	c.Data["json"] = data
 	c.ServeJSON()

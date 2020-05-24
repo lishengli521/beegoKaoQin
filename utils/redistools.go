@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"time"
@@ -60,26 +61,28 @@ func (r *RedisDataStore) RedisConnect() (redis.Conn, error) {
 
 	return c, nil
 }
-func (r *RedisDataStore) Get(k string) (interface{}, error) {
+func (r *RedisDataStore) Get(k string) ([]byte) {
 	c := r.RedisPool.Get()
 	defer c.Close()
 	v, err := c.Do("GET", k)
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	return v, nil
+	return v.([]byte)
 }
 
-func (r *RedisDataStore) Set(k, v string) error {
+func (r *RedisDataStore) Set(k, v interface{}) error {
 	c := r.RedisPool.Get()
 	defer c.Close()
-	_, err := c.Do("SET", k, v)
+	values,_:=json.Marshal(v)
+	_, err := c.Do("SET", k, values)
 	return err
 }
 
 func (r *RedisDataStore) SetEx(k string, v interface{}, ex int64) error {
 	c := r.RedisPool.Get()
 	defer c.Close()
-	_, err := c.Do("SET", k, v, "EX", ex)
+	values,_:=json.Marshal(v)
+	_, err := c.Do("SET", k, values, "EX", ex)
 	return err
 }
